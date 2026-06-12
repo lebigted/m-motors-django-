@@ -1,10 +1,16 @@
 import pytest
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
 
 
-REGISTER_URL = '/api/auth/register/'
-LOGIN_URL    = '/api/auth/login/'
-ME_URL       = '/api/auth/me/'
-LOGOUT_URL   = '/api/auth/logout/'
+REGISTER_URL       = '/api/auth/register/'
+LOGIN_URL          = '/api/auth/login/'
+ME_URL             = '/api/auth/me/'
+LOGOUT_URL         = '/api/auth/logout/'
+CLIENTS_URL        = '/api/auth/clients/'
+PWD_RESET_URL      = '/api/auth/password-reset/'
+PWD_CONFIRM_URL    = '/api/auth/password-reset/confirm/'
 
 
 # ── REGISTER ─────────────────────────────────────────────
@@ -131,3 +137,73 @@ def test_logout_requires_auth(anon_client):
 def test_logout_success(user_client):
     res = user_client.post(LOGOUT_URL, {'refresh': 'anytoken'})
     assert res.status_code == 200
+
+
+# ── CLIENT LIST ───────────────────────────────────────────
+
+@pytest.mark.django_db
+def test_client_list_as_admin(admin_client):
+    res = admin_client.get(CLIENTS_URL)
+    assert res.status_code == 200
+    assert isinstance(res.data, list)
+
+
+@pytest.mark.django_db
+def test_client_list_forbidden_for_client(user_client):
+    res = user_client.get(CLIENTS_URL)
+    assert res.status_code == 403
+
+
+# ── PASSWORD RESET ────────────────────────────────────────
+
+@pytest.mark.django_db
+def test_password_reset_request_unknown_email(anon_client):
+    res = anon_client.post(PWD_RESET_URL, {'email': 'inconnu@example.com'})
+    assert res.status_code == 200
+    assert 'message' in res.data
+
+
+@pytest.mark.django_db
+def test_password_reset_request_known_email(anon_client, client_user):
+    res = anon_client.post(PWD_RESET_URL, {'email': client_user.email})
+    assert res.status_code == 200
+    assert 'uid' in res.data
+    assert 'token' in res.data
+
+
+@pytest.mark.django_db
+def test_password_reset_confirm_success(anon_client, client_user):
+    uid   = urlsafe_base64_encode(force_bytes(client_user.pk))
+    token = default_token_generator.make_token(client_user)
+    res   = anon_client.post(PWD_CONFIRM_URL, {
+        'uid': uid, 'token': token, 'new_password': 'NewPass123!',
+    })
+    assert res.status_code == 200
+    assert 'message' in res.data
+
+
+@pytest.mark.django_db
+def test_password_reset_confirm_short_password(anon_client, client_user):
+    uid   = urlsafe_base64_encode(force_bytes(client_user.pk))
+    token = default_token_generator.make_token(client_user)
+    res   = anon_client.post(PWD_CONFIRM_URL, {
+        'uid': uid, 'token': token, 'new_password': '123',
+    })
+    assert res.status_code == 400
+
+
+@pytest.mark.django_db
+def test_password_reset_confirm_invalid_token(anon_client, client_user):
+    uid = urlsafe_base64_encode(force_bytes(client_user.pk))
+    res = anon_client.post(PWD_CONFIRM_URL, {
+        'uid': uid, 'token': 'badtoken', 'new_password': 'NewPass123!',
+    })
+    assert res.status_code == 400
+
+
+@pytest.mark.django_db
+def test_password_reset_confirm_invalid_uid(anon_client):
+    res = anon_client.post(PWD_CONFIRM_URL, {
+        'uid': 'notvalid', 'token': 'anytoken', 'new_password': 'NewPass123!',
+    })
+    assert res.status_code == 400
