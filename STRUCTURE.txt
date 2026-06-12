@@ -1,0 +1,57 @@
+STRUCTURE — m-motors-django (Backend API)
+==========================================
+
+Stack : Django 4.x · Django REST Framework · SimpleJWT · pytest
+
+
+APPLICATIONS
+------------
+
+accounts/
+  Modèle utilisateur custom (email comme identifiant, rôle admin/client).
+  Auth JWT : access token 8h, refresh token 7 jours.
+  Vues : login, register, profil (GET/PATCH), liste clients (admin).
+
+vehicles/
+  Modèle Vehicle : type achat/location, services LLD, options, photo.
+  CRUD complet côté admin, lecture publique sans auth.
+  Actions : toggle achat ↔ location, changement de statut.
+
+dossiers/
+  Trois modèles dans dossiers/models/ :
+    dossier.py   Demande client, 10 statuts, documents joints, messages.
+    contrat.py   Cycle de vie complet (9 statuts : a_signer → actif → termine).
+    sav.py       Tickets SAV et leurs messages.
+
+  Même découpage dans serializers/ et views/ (un fichier par domaine).
+
+
+CONFIGURATION
+-------------
+
+mmotors/
+  settings.py   Configuration projet (JWT, CORS, media, logging, Sentry).
+  urls.py       Routage global.
+  wsgi.py       Point d'entrée WSGI.
+
+
+FICHIERS UTILES
+---------------
+
+setup.bat       Installation automatique (venv + migrations + seed).
+seed.py         Données de démonstration (véhicules, users, dossiers, contrats).
+conftest.py     Fixtures pytest partagées entre tous les modules.
+requirements.txt  Dépendances Python.
+
+.github/
+  workflows/ci.yml   Pipeline CI GitHub Actions (pytest sur chaque push).
+
+
+TESTS
+-----
+
+67 tests pytest — couverture ~87%
+
+  accounts/tests/    Auth, register, profil, permissions
+  vehicles/tests/    CRUD véhicules, toggle, statut
+  dossiers/tests/    Dossiers, contrats (workflow complet), SAV, messages

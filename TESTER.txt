@@ -1,0 +1,67 @@
+BACKEND M-MOTORS — Django REST Framework
+=========================================
+
+
+INSTALLATION (première fois)
+-----------------------------
+
+1. Ouvrir un terminal dans ce dossier (m-motors-django/)
+
+2. Lancer le script de setup automatique :
+     setup.bat
+   (crée le venv, installe les dépendances, applique les migrations, charge les données de démo)
+
+3. L'API est disponible sur :
+     http://127.0.0.1:8000
+
+
+DÉMARRAGE (fois suivantes)
+--------------------------
+
+  venv\Scripts\activate
+  python manage.py runserver
+
+
+COMPTES DE TEST
+---------------
+
+  Client  →  client@test.com   /  client123
+  Admin   →  admin@mmotors.fr  /  admin123
+
+  Interface admin Django :  http://127.0.0.1:8000/admin/
+
+
+ENDPOINTS PRINCIPAUX
+--------------------
+
+  POST   /api/auth/login/             Connexion (retourne JWT)
+  POST   /api/auth/register/          Inscription
+  GET    /api/vehicles/               Catalogue véhicules (public)
+  GET    /api/vehicles/<id>/          Fiche véhicule
+  GET    /api/dossiers/               Dossiers du client connecté
+  POST   /api/dossiers/               Déposer un dossier
+  GET    /api/contrats/               Contrats (client ou admin)
+  GET    /api/sav/                    Tickets SAV
+
+
+TESTS AUTOMATISÉS
+-----------------
+
+  Avec le venv actif :
+
+    pytest                    lance tous les tests (67 tests)
+    pytest --cov=.            avec couverture de code (~87%)
+    pytest accounts/          tests authentification uniquement
+    pytest vehicles/          tests véhicules uniquement
+    pytest dossiers/          tests dossiers / contrats / SAV
+
+
+STRUCTURE DU PROJET
+-------------------
+
+  accounts/     Modèle utilisateur custom, auth JWT
+  vehicles/     Modèle Vehicle, CRUD, toggle achat/location
+  dossiers/     Dossiers, contrats (9 statuts), SAV, messages, documents
+  mmotors/      Settings, urls, wsgi
+  seed.py       Données de démonstration
+  conftest.py   Fixtures pytest partagées
