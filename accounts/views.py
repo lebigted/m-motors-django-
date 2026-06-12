@@ -120,7 +120,10 @@ def password_reset_confirm(request):
     new_password = request.data.get('new_password', '')
 
     if len(new_password) < 6:
-        return Response({'detail': 'Le mot de passe doit faire au moins 6 caractères.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'detail': 'Le mot de passe doit faire au moins 6 caractères.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     try:
         pk   = force_str(urlsafe_base64_decode(uid))
