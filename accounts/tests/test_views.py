@@ -167,8 +167,7 @@ def test_password_reset_request_unknown_email(anon_client):
 def test_password_reset_request_known_email(anon_client, client_user):
     res = anon_client.post(PWD_RESET_URL, {'email': client_user.email})
     assert res.status_code == 200
-    assert 'uid' in res.data
-    assert 'token' in res.data
+    assert 'message' in res.data
 
 
 @pytest.mark.django_db
