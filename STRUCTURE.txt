@@ -10,7 +10,8 @@ APPLICATIONS
 accounts/
   Modèle utilisateur custom (email comme identifiant, rôle admin/client).
   Auth JWT : access token 8h, refresh token 7 jours.
-  Vues : login, register, profil (GET/PATCH), liste clients (admin).
+  Vues : login, register, profil (GET/PATCH), liste clients (admin),
+         réinitialisation de mot de passe (request + confirm).
 
 vehicles/
   Modèle Vehicle : type achat/location, services LLD, options, photo.
@@ -44,14 +45,14 @@ conftest.py     Fixtures pytest partagées entre tous les modules.
 requirements.txt  Dépendances Python.
 
 .github/
-  workflows/ci.yml   Pipeline CI GitHub Actions (pytest sur chaque push).
+  workflows/ci.yml   Pipeline CI GitHub Actions (flake8 + bandit + pytest sur chaque push).
 
 
 TESTS
 -----
 
-67 tests pytest — couverture ~87%
+75 tests pytest — couverture ~80%
 
-  accounts/tests/    Auth, register, profil, permissions
+  accounts/tests/    Auth, register, profil, permissions, réinitialisation mot de passe
   vehicles/tests/    CRUD véhicules, toggle, statut
   dossiers/tests/    Dossiers, contrats (workflow complet), SAV, messages
